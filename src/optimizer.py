@@ -17,3 +17,6 @@ class Optim(object):
 
         for layer in self.net.layers:
             layer.update_parameters(gradient_step=self.lr)
+    def zero_grad(self):
+        for layer in self.net.layers:
+            layer.zero_grad()

@@ -18,8 +18,8 @@ class BinaryCrossEntropyLoss():
     # Combine Sigmoid in BinaryCrossEntropyLoss
     def forward(self, y, yhat):
         # return -y * np.log(1 + np.exp(-yhat)) - (1 - y) * np.log(1 + np.exp(yhat))
-        return y * np.log(yhat) + (1 - y) * np.log(1 - yhat)
+        return -y * np.log(yhat) - (1 - y) * np.log(1 - yhat)
 
     def backward(self, y, yhat):
         # return (y * (1 + np.exp(yhat)) - np.exp(yhat)) / (1 + np.exp(yhat))
-        return (y - yhat) / (yhat * (1 - yhat))
+        return (yhat - y) / (yhat * (1 - yhat))
