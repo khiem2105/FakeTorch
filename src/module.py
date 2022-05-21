@@ -28,7 +28,7 @@ class Module(object):
         pass
 
 class Linear(Module):
-    def __init__(self, d_prev, d_next, init="xavier"):
+    def __init__(self, d_prev, d_next, init="xavier", grad_norm=None):
         super(Linear, self).__init__()
         self._gradient = np.zeros((d_prev, d_next))
         self._bias_gradient = np.zeros((1, d_next))
@@ -44,8 +44,11 @@ class Linear(Module):
 
         self.dim = (d_prev, d_next)
 
+        self.grad_norm = grad_norm
+
     def zero_grad(self):
         self._gradient = np.zeros(self.dim)
+        self._bias_gradient = np.zeros((1, self.dim[1]))
 
     def forward(self, X):
         assert X.shape[1] == self.dim[0], "input not in right shape"
@@ -103,6 +106,23 @@ class TanH(Module):
 
     def backward_delta(self, delta):
         return delta * (1 - np.square(self.output))
+
+class ReLU(Module):
+    def __init__(self):
+        super(ReLU, self).__init__()
+        self.output = None
+    
+    def forward(self, X):
+        self.X = X
+        self.output = X > 0 * X
+
+        return self.output
+
+    def update_parameters(self, gradient_step=0.001):
+        pass
+
+    def backward_delta(self, delta):
+        return delta * self.X > 0
 
 
 class Sequentiel(object):
