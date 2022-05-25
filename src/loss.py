@@ -1,5 +1,7 @@
 import numpy as np
 
+from numba import jit
+
 class Loss(object):
     def forward(self, y, yhat):
         pass
@@ -17,19 +19,22 @@ class MSELoss():
 class BinaryCrossEntropyLoss():
     # Combine Sigmoid in BinaryCrossEntropyLoss
     def forward(self, y, yhat):
-        return y * np.log(1 + np.exp(-yhat)) + (1 - y) * np.log(1 + np.exp(yhat))
-        # return -y * np.log(yhat) - (1 - y) * np.log(1 - yhat)
+        # return y * np.log(1 + np.exp(-yhat)) + (1 - y) * np.log(1 + np.exp(yhat))
+        return -y * np.log(yhat) - (1 - y) * np.log(1 - yhat)
 
     def backward(self, y, yhat):
-        return 1 / (1 + np.exp(-yhat)) - y
-        # return (yhat - y) / (yhat * (1 - yhat))
+        # return 1 / (1 + np.exp(-yhat)) - y
+        return -y / yhat + (1 -y) / (1 - yhat)
 
 class CrossEntropy():
     def forward(self, y, yhat):
         exp = np.exp(yhat)
-        softmax = exp / np.sum(exp)
+        softmax = exp / np.sum(exp, axis=1, keepdims=True)
 
-        return np.dot(y.T, softmax)
+        return -np.sum(y * np.log(softmax), axis=1, keepdims=True)
 
     def backward(self, y, yhat):
-        return np.exp(yhat) / np.sum(np.exp(yhat)) - y
+        exp = np.exp(yhat)
+        softmax = exp / np.sum(exp, axis=1, keepdims=True)
+
+        return softmax - y
