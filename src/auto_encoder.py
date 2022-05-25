@@ -1,13 +1,9 @@
-from black import Line
-from yaml import parse
-from module import Linear, ReLU, Sigmoid, SoftMax, Sequentiel, TanH
-from utils import load_usps, confusion_matrix, one_hot
-from loss import BinaryCrossEntropyLoss, CrossEntropy
+from module import Linear, ReLU, Sigmoid, Sequentiel, TanH
+from loss import BinaryCrossEntropyLoss
 from optimizer import SGD
 from trainer import Trainer
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 from sklearn.datasets import fetch_openml
 
 import matplotlib.pyplot as plt
