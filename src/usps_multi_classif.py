@@ -1,4 +1,3 @@
-from yaml import parse
 from module import Linear, ReLU, Sigmoid, SoftMax, Sequentiel, TanH
 from utils import load_usps, confusion_matrix, one_hot
 from loss import CrossEntropy

@@ -1,7 +1,5 @@
 import numpy as np
 
-from numba import jit
-
 class Loss(object):
     def forward(self, y, yhat):
         pass

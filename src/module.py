@@ -1,7 +1,4 @@
-from turtle import forward
 import numpy as np
-
-from numba import jit
 
 
 class Module(object):

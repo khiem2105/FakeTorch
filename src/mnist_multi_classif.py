@@ -1,6 +1,5 @@
-from yaml import parse
 from module import Linear, ReLU, Sigmoid, SoftMax, Sequentiel, TanH
-from utils import load_usps, confusion_matrix, one_hot
+from utils import confusion_matrix, one_hot
 from loss import CrossEntropy
 from optimizer import SGD
 from trainer import Trainer

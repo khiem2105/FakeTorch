@@ -1,7 +1,5 @@
 import numpy as np
 
-from numba import jit
-
 class Optim(object):
     def __init__(self, net, loss, lr=1e-3):
         super(Optim, self).__init__()
