@@ -1,5 +1,7 @@
 import numpy as np
 
+from conv import *
+
 
 class Module(object):
     def __init__(self):
@@ -28,7 +30,7 @@ class Module(object):
 
 
 class Linear(Module):
-    def __init__(self, d_prev, d_next, init="xavier", grad_norm=None):
+    def __init__(self, d_prev, d_next, init="xavier"):
         super(Linear, self).__init__()
         self._gradient = np.zeros((d_prev, d_next))
         self._bias_gradient = np.zeros((1, d_next))
@@ -96,6 +98,7 @@ class Sigmoid(Module):
         self.output = None
     
     def forward(self, X):
+        X = np.clip(X, -500, 500)
         self.output = 1 / (1 + np.exp(-X))
 
         return self.output
@@ -176,15 +179,88 @@ class Sequentiel(object):
             layer.backward_update_gradient(delta, adaptative, beta1, beta2)
             delta = layer.backward_delta(delta)
 
+class Conv2D(Module):
+    def __init__(self, kernel_size, n_chanel, n_kernel, pad=2, stride=2, init="xavier"):
+        super(Conv2D, self).__init__()
+        self.kernel_size = kernel_size
+        self.n_chanel = n_chanel
+        self.n_kernel = n_kernel
+        self.pad = pad
+        self.stride = stride
 
-def zero_pad(X, pad):
-    """
-    X: python numpy array of shape (batch_size, n_H, n_W, n_C)
-    pad: amount of paddding around each image on vertical and horizontal dimensions
-    """
+        self._gradient = np.zeros((kernel_size, kernel_size, n_chanel, n_kernel))
+        self._bias_gradient = np.zeros((1, 1, 1, n_kernel))
 
-    X_pad = np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)))
+        if init == "xavier":
+            self._parameters = np.random.normal(0, 1 / (kernel_size * kernel_size * n_chanel), (kernel_size, kernel_size, n_chanel, n_kernel))
+        else:
+            self._parameters = np.random.normal(0, 1, (kernel_size, kernel_size, n_chanel, n_kernel))
+        
+        self._bias = np.zeros((1, 1, 1, n_kernel))
 
-    return X_pad
+        self.dim = (kernel_size, kernel_size, n_chanel, n_kernel)
+
+    def zero_grad(self):
+        self._gradient = np.zeros(self.dim)
+        self._bias_gradient = np.zeros((1, 1, 1, self.n_kernel))
+
+    def forward(self, X):
+        self.input = X
+
+        return conv_forward(X, self._parameters, self._bias, self.stride, self.pad)
+
+    def backward_update_gradient(self, delta, adaptative=False, beta1=None, beta2=None):
+        dW, db = conv_backward_parameters(delta, self.input, self._parameters, self.stride, self.pad)
+
+        self._gradient = self._gradient + dW
+        self._bias_gradient = self._bias_gradient + db
+
+    def backward_delta(self, delta):
+        return conv_backward_delta(delta, self.input, self._parameters, self.stride, self.pad)
+
+    def update_parameters(self, adaptative=False, beta1=None, beta2=None, eps=None, epoch=None, gradient_step=0.001):
+        self._parameters = self._parameters - gradient_step * self._gradient
+        self._bias = self._bias - gradient_step * self._bias_gradient
+
+
+class MaxPool(Module):
+    def __init__(self, kernel_size=3, stride=2):
+        super(MaxPool, self).__init__()
+        self.kernel_size = kernel_size
+        self.stride = stride
+
+    def forward(self, X):
+        self.input = X
+
+        return max_pool_forward(X, self.kernel_size, self.stride)
+
+    def update_parameters(self, adaptative=False, beta1=None, beta2=None, eps=None, epoch=None, gradient_step=0.001):
+        pass
+
+    def backward_delta(self, delta):
+        return max_pool_backward(delta, self.input, self.stride, self.kernel_size)
+
+
+class Flatten(Module):
+    def __init__(self):
+        super(Flatten, self).__init__()
+
+    def forward(self, X):
+        self.input = X
+
+        return np.ravel(X).reshape(X.shape[0], -1)
+
+    def update_parameters(self, adaptative=False, beta1=None, beta2=None, eps=None, epoch=None, gradient_step=0.001):
+        pass
+
+    def backward_delta(self, delta):
+        return delta.reshape(self.input.shape)
+
+
+
+
+
+
+
 
 
